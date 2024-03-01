@@ -1,3 +1,6 @@
+import collections
+
+
 class Node:
     def __init__(self, value, l_subtree=None, r_subtree=None, parent=None, side=0):
         self.value, self.l_subtree, self.r_subtree, self.parent, self.side = value, l_subtree, r_subtree, parent, side
@@ -23,7 +26,7 @@ class Tree:
         if self.current_node.value > node.value:
             if self.current_node.l_subtree is None:
                 node.parent = self.current_node
-                node.size = 0
+                node.side = 0
                 self.current_node.l_subtree = node
             else:
                 self.current_node = self.current_node.l_subtree
@@ -31,7 +34,7 @@ class Tree:
 
         else:
             if self.current_node.r_subtree is None:
-                node.size = 1
+                node.side = 1
                 node.parent = self.current_node
                 self.current_node.r_subtree = node
             else:
@@ -45,16 +48,31 @@ class Tree:
         Delete a node from the tree
         :param int node_value: the value of the node to delete | The value need to be in the tree
         """
+        node = self.search_node(node_value, True)[1]
+        node_side = node.side
+        node_parent = node.parent
+
+        # le nœud est une feuille
         if self.is_leaf(node_value):
-            node = self.search_node(node_value, True)[1]
-            node_side = node.side
-            node_parent = node.parent
+
             if node_side == 0:
                 node_parent.l_subtree = None
             else:
                 node_parent.r_subtree = None
-        # in work
-        # https://www.geeksforgeeks.org/deletion-in-binary-search-tree/
+
+        # le nœud a 2 enfants
+        elif node.l_subtree is not None and node.r_subtree is not None:
+            pass
+
+        # le noeud a 1 enfant
+        elif node.l_subtree or node.r_subtree:
+
+            node_child = node.l_subtree if node.l_subtree else node.r_subtree
+
+            if node_side == 0:
+                node_parent.l_subtree = node_child
+            else:
+                node_parent.r_subtree = node_child
 
     def balance_tree(self):
         # parcourir l'arbre
@@ -103,8 +121,39 @@ class Tree:
 
 
 class TraversingTree:
-    def __init__(self):
-        pass
+    def __init__(self, bst):
+        self.root = bst.root
+
+        self.preorder_list = []
+        self.inorder_list = []
+        self.postorder_list = []
+
+        self.level_list = []
+
+    def depth_traversal(self):
+        def _wrapper(current_node):
+            if current_node is None:
+                return
+
+            self.preorder_list.append(current_node.value)
+            _wrapper(current_node.l_subtree)
+            self.inorder_list.append(current_node.value)
+            _wrapper(current_node.r_subtree)
+            self.postorder_list.append(current_node.value)
+
+        _wrapper(self.root)
+
+    def level_traversal(self):
+        queue = collections.deque()
+        queue.append(self.root)
+
+        while len(queue) != 0:
+            node = queue.popleft()
+
+            queue.append(node.l_subtree) if node.l_subtree else None
+            queue.append(node.r_subtree) if node.r_subtree else None
+
+            self.level_list.append(node.value)
 
 
 if __name__ == '__main__':
@@ -113,13 +162,24 @@ if __name__ == '__main__':
     for val in [16, 6, 8, 20, 1]:
         abr.insert_node(Node(val))
 
+    tt = TraversingTree(abr)
+
+    tt.level_traversal()
+    tt.depth_traversal()
+
     print(abr)
 
-    print("16 present: ", abr.search_node(16))  # True
-    print("21 present: ", abr.search_node(21))  # False
-
-    print("16 leaf:", abr.is_leaf(16))  # False
-    print("1 leaf:", abr.is_leaf(1))  # True
-
-    abr.delete_node(1)
-    print(abr)
+    # print("Level order of the BST", tt.level_list)
+    # print("Pre-order of the BST:", tt.preorder_list)
+    # print("In-order of the BST:", tt.inorder_list)
+    # print("Post-order of the BST:", tt.postorder_list)
+    #
+    # print("16 present:", abr.search_node(16))  # True
+    # print("21 present:", abr.search_node(21))  # False
+    #
+    # print("16 leaf:", abr.is_leaf(16))  # False
+    # print("1 leaf:", abr.is_leaf(1))  # True
+    #
+    # abr.delete_node(1)
+    # abr.delete_node(16)
+    # print(abr)
