@@ -43,17 +43,18 @@ class Tree:
 
         self.current_node = self.root
 
-    def delete_node(self, node_value):
+    def delete_node(self, node_value, leaf_deleting=False):
         """
         Delete a node from the tree
         :param int node_value: the value of the node to delete | The value need to be in the tree
+        :param bool leaf_deleting: private value. if we want to delete a node who has two children
         """
         node = self.search_node(node_value, True)[1]
         node_side = node.side
         node_parent = node.parent
 
         # le nœud est une feuille
-        if self.is_leaf(node_value):
+        if self.is_leaf(node_value, leaf_deleting):
 
             if node_side == 0:
                 node_parent.l_subtree = None
@@ -62,23 +63,35 @@ class Tree:
 
         # le nœud a 2 enfants
         elif node.l_subtree is not None and node.r_subtree is not None:
-            pass
+            self.current_node = node
+
+            next_node_value = self.current_node.r_subtree
+
+            while next_node_value.l_subtree is not None:
+                next_node_value = next_node_value.l_subtree
+
+            self.current_node.value = next_node_value.value
+
+            inf_value = float('-inf')
+            next_node_value.value = inf_value
+
+            self.current_node = self.current_node.r_subtree
+
+            self.delete_node(inf_value, True)
 
         # le noeud a 1 enfant
         elif node.l_subtree or node.r_subtree:
+            self.current_node = node
 
             node_child = node.l_subtree if node.l_subtree else node.r_subtree
 
-            if node_side == 0:
-                node_parent.l_subtree = node_child
-            else:
-                node_parent.r_subtree = node_child
+            self.current_node.value = node_child.value
+            inf_value = float('-inf') if node.l_subtree else float('inf')
+            node_child.value = inf_value
 
-    def balance_tree(self):
-        # parcourir l'arbre
-        # trier la liste
-        # chaque parent est le milieu de la liste
-        pass
+            self.delete_node(inf_value, True)
+
+        self.current_node = self.root
 
     def search_node(self, node_value, return_node=False):
         """
@@ -92,6 +105,7 @@ class Tree:
             return False
 
         elif self.current_node.value == node_value:
+
             if return_node:
                 node_package = (True, self.current_node)
                 self.current_node = self.root
@@ -107,12 +121,15 @@ class Tree:
             self.current_node = self.current_node.r_subtree
             return self.search_node(node_value, return_node)
 
-    def is_leaf(self, node_value):
+    def is_leaf(self, node_value, leaf_deleting=False):
         """
         Check if the node have subtrees (give value of the node)
         :param int node_value: the value of the node to check | Value need to be in the tree
+        :param bool leaf_deleting: if we want to delete a node with 2 children (private)
         :return: False if not leaf, True otherwise
         """
+        if leaf_deleting:
+            return True
         node = self.search_node(node_value, True)[1]
         return node.l_subtree is None and node.r_subtree is None
 
@@ -162,10 +179,10 @@ if __name__ == '__main__':
     for val in [16, 6, 8, 20, 1]:
         abr.insert_node(Node(val))
 
-    tt = TraversingTree(abr)
-
-    tt.level_traversal()
-    tt.depth_traversal()
+    # tt = TraversingTree(abr)
+    #
+    # tt.level_traversal()
+    # tt.depth_traversal()
 
     print(abr)
 
@@ -182,4 +199,6 @@ if __name__ == '__main__':
     #
     # abr.delete_node(1)
     # abr.delete_node(16)
-    # print(abr)
+    # abr.delete_node(10)
+    # abr.delete_node(6)
+    # print(abr)  # ((None - 8 - None) - 20 - None)
