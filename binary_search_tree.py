@@ -3,6 +3,14 @@ import collections
 
 class Node:
     def __init__(self, value, l_subtree=None, r_subtree=None, parent=None, side=0):
+        """
+        Init a Node pour Binary Search Tree
+        :param value: the value of the Node
+        :param l_subtree: the left children of the Node
+        :param r_subtree: the right children of the Node
+        :param parent: the parent of this Node
+        :param side: the side of the Node according to his parent (0 the Node is the left child, 1 the right child)
+        """
         self.value, self.l_subtree, self.r_subtree, self.parent, self.side = value, l_subtree, r_subtree, parent, side
 
     def __str__(self):
@@ -12,7 +20,7 @@ class Node:
 class Tree:
     def __init__(self, root):
         """
-        Generate a tree with the given root
+        Init a tree with first Node the root
         :param Node() root: the first node of the tree
         """
         self.root = root
@@ -98,7 +106,7 @@ class Tree:
         Search the node in the tree
         :param int node_value: the value of the node to search
         :param bool return_node: return the node in addition if he's found, and if this param is True
-        :return: False if not found, True otherwise
+        :return bool | [bool, Node()]: False if not found, True otherwise. Return the node in addition if return_node
         """
         if self.current_node is None:
             self.current_node = self.root
@@ -121,12 +129,27 @@ class Tree:
             self.current_node = self.current_node.r_subtree
             return self.search_node(node_value, return_node)
 
+    def height(self):
+        """
+        Return the deepest value in the tree
+        :return int: the height of the tree
+        """
+        def _wrapper(current_node):
+            if current_node is None or self.is_leaf(current_node.value):
+                return 0
+
+            sub_height = max(_wrapper(current_node.l_subtree), _wrapper(current_node.r_subtree))
+
+            return 1 + sub_height
+
+        return _wrapper(self.current_node)
+
     def is_leaf(self, node_value, leaf_deleting=False):
         """
         Check if the node have subtrees (give value of the node)
         :param int node_value: the value of the node to check | Value need to be in the tree
         :param bool leaf_deleting: if we want to delete a node with 2 children (private)
-        :return: False if not leaf, True otherwise
+        :return bool: False if not leaf, True otherwise
         """
         if leaf_deleting:
             return True
@@ -139,6 +162,10 @@ class Tree:
 
 class TraversingTree:
     def __init__(self, bst):
+        """
+        Init of the object
+        :param Tree() bst: the binary search tree to explore
+        """
         self.root = bst.root
 
         self.preorder_list = []
@@ -148,6 +175,10 @@ class TraversingTree:
         self.level_list = []
 
     def depth_traversal(self):
+        """
+        Make a pre-order, in-order, post-order depth exploration and modify object attributes
+        :return: None
+        """
         def _wrapper(current_node):
             if current_node is None:
                 return
@@ -161,6 +192,10 @@ class TraversingTree:
         _wrapper(self.root)
 
     def level_traversal(self):
+        """
+        Make an exploration by level and modify object attributes
+        :return: None
+        """
         queue = collections.deque()
         queue.append(self.root)
 
