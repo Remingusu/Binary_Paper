@@ -10,7 +10,7 @@ class Paper:
         """
         self._tree = bs_tree
 
-        self.area = [0]
+        self._area = [0]
 
     def press_tree(self):
         """
@@ -24,7 +24,7 @@ class Paper:
             val = queue.popleft()
 
             if val is None:
-                self.area.append(None)
+                self._area.append(None)
 
             else:
                 node = self._tree.search_node(val, True)[1]
@@ -32,14 +32,29 @@ class Paper:
                 queue.append(node.l_subtree.value) if node.l_subtree else queue.append(None)
                 queue.append(node.r_subtree.value) if node.r_subtree else queue.append(None)
 
-                self.area.append(val)  # 10 6 16 1 8 20
-                self.area[0] += 1
+                self._area.append(val)  # 10 6 16 1 8 20
+                self._area[0] += 1
 
-        for _ in range(sum([2**i for i in range(self._tree.height()+2)]) - (len(self.area)-1)):
-            self.area.append(None)
+        for _ in range(sum([2 ** i for i in range(self._tree.height() + 2)]) - (len(self._area) - 1)):
+            self._area.append(None)
 
-    def insert(self, value, parent, l_subtree_value=None, r_subtree_value=None):
-        pass
+    def insert(self, value, parent):
+        """
+        Insert a value in the list
+        :param int value: the value to insert
+        :param int parent: the parent of the value to insert
+        :return: None
+        """
+        parent_index = self.search(parent, True)[1]
+
+        if value > self._area[parent_index]:
+            self._area[(2 * parent_index) + 1] = value
+
+        else:
+            self._area[2 * parent_index] = value
+
+        for _ in range(2):
+            self._area.append(None)
 
     def delete(self, value):
         pass
@@ -53,15 +68,23 @@ class Paper:
         """
         incr = 1
 
-        while incr < len(self.area) and self.area[incr] != value:
+        while incr < len(self._area) and self._area[incr] != value:
             incr += 1
 
-        return (not incr == len(self.area), incr) if return_index else not incr == len(self.area)
+        return (not incr == len(self._area), incr) if return_index else not incr == len(self._area)
 
     def is_leaf(self, value):
+        """
+        Check if the value is a leaf
+        :param int value: value to check if value is leaf
+        :return bool: True if two None child, False otherwise
+        """
         parent = self.search(value, True)[1]
 
-        return self.area[2*parent] is None and self.area[(2*parent)+1] is None
+        return self._area[2 * parent] is None and self._area[(2 * parent) + 1] is None
+
+    def __str__(self):
+        return str(self._area)
 
 
 if __name__ == '__main__':
@@ -73,6 +96,15 @@ if __name__ == '__main__':
     paper = Paper(tree)
     paper.press_tree()
 
-    print(paper.area)
+    print(paper)
 
-    print(paper.is_leaf(10))
+    # print("20 est une feuille:", paper.is_leaf(20))  # True
+    # print("10 est une feuille:", paper.is_leaf(10))  # False
+
+    # print("8 est présent:", paper.search(8))  # True
+    # print("0 est présent:", paper.search(0))  # False
+
+    # paper.insert(14, 16)
+    # paper.insert(3, 1)
+
+    # print(paper)
