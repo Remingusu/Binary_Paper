@@ -56,9 +56,6 @@ class Paper:
         for _ in range(2):
             self._area.append(None)
 
-    def delete(self, value):
-        pass
-
     def search(self, value, return_index=False):
         """
         Search for the value in the area
